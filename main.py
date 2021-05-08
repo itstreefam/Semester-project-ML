@@ -31,7 +31,8 @@ if __name__ == '__main__':
         svm.train(Xtrain, ytrain)
 
         test_pred = svm.predict(Xtest)
-        print("Test accuracy is {}".format(accuracy_score(ytest.reshape(-1, ), test_pred)))
+        print(test_pred)
+        # print("Test accuracy is {}".format(accuracy_score(ytest.reshape(-1, ), test_pred)))
 
     except Exception as e:
         logging.error(traceback.format_exc())

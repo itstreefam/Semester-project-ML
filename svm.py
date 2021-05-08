@@ -44,7 +44,6 @@ class SVM:
         n = len(self.X)
         self.alpha = np.array([0.0] * n)
         self.b = 0.0
-
         iteration = 0
         while iteration < self.max_iteration:
             num_changed_alphas = 0
@@ -53,10 +52,9 @@ class SVM:
                 x_i, y_i = self.X[i, :], self.y[i]
 
                 self.w = np.dot(self.alpha * self.y, self.X)
-
+                
                 E_i = self.f(x_i, self.w, self.b) - y_i
-
-                if (y_i * E_i < -self.tol and self.alpha[i] < self.regularization) or (y_i * E_i > self.tol and self.alpha[i] > 0):
+                if ((y_i * E_i).all() < - self.tol and self.alpha[i] < self.regularization) or ((y_i * E_i).all() > self.tol and self.alpha[i] > 0):
                     j = self.get_rand_j(i, n)
 
                     x_j, y_j = self.X[j, :], self.y[j]
@@ -112,9 +110,12 @@ class SVM:
 
     def f(self, X, w, b):
         pred = []
-        f_x = np.dot(w, X) + b
+        
+        # X = X.reshape(len(X),1)
+        f_x = np.dot(w, X.T) + b
+
         for e in f_x:
-            if e >= 0:
+            if e.all() >= 0:
                 pred.append(1)
             else:
                 pred.append(-1)

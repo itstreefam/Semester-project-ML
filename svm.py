@@ -42,17 +42,19 @@ class SVM:
         self.X = SVM.normalize(X)
         self.y = y
         n = len(self.X) + 1
-        self.alpha = [0.0] * n
+        self.alpha = np.array([0.0] * n)
         self.b = 0
 
-        iter = 0
-        while iter < self.max_iteration:
-            iter += 1
+        iteration = 0
+        while iteration < self.max_iteration:
             num_changed_alphas = 0
 
             for i in range(n):
-                x_i, y_i = X[i, :], y[i]
-                x_j, y_j = X[j, :], y[j]
+                x_i, y_i = self.X[i, :], self.y[i]
+
+                print(self.alpha.shape)
+                print(self.y.shape)
+                print(self.X.shape)
 
                 self.w = np.dot(self.alpha * self.y, self.X)
                 self.b = np.mean(self.y - np.dot(self.w.T, self.X.T))
@@ -61,6 +63,8 @@ class SVM:
 
                 if (y_i * E_i < -self.tol and self.alpha[i] < self.regularization) or (y_i * E_i > self.tol and self.alphas[i] > 0):
                     j = self.get_rand_j(i, n)
+
+                    x_j, y_j = self.X[j, :], self.y[j]
                     E_j = self.f(x_j, self.w, self.b) - y_j
 
                     prev_alpha_i, prev_alpha_j = self.alpha[i], self.alpha[j]
@@ -85,13 +89,21 @@ class SVM:
                     elif self.alpha[j] < L:
                         self.alpha[j] = L
 
-                    if self.alpha[j] - prev_alpha_j < 1e-5:
+                    if self.alpha[j] - prev_alpha_j < self.tol:
                         continue
 
                     self.alpha[i] = prev_alpha_i + y_i * y_j * (prev_alpha_j - self.alpha[j])
 
+                    num_changed_alphas += 1
 
+                if num_changed_alphas == 0:
+                    iteration += 1
+                else:
+                    iteration = 0
 
+    def predict(self, X):
+        X = SVM.normalize(X)
+        return self.f(X, self.w, self.b)
 
     def f(self, X, w, b):
         pred = []

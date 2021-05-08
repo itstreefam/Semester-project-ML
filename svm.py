@@ -41,9 +41,9 @@ class SVM:
     def train(self, X, y):
         self.X = SVM.normalize(X)
         self.y = y
-        n = len(self.X) + 1
+        n = len(self.X)
         self.alpha = np.array([0.0] * n)
-        self.b = 0
+        self.b = 0.0
 
         iteration = 0
         while iteration < self.max_iteration:
@@ -52,16 +52,11 @@ class SVM:
             for i in range(n):
                 x_i, y_i = self.X[i, :], self.y[i]
 
-                print(self.alpha.shape)
-                print(self.y.shape)
-                print(self.X.shape)
-
                 self.w = np.dot(self.alpha * self.y, self.X)
-                self.b = np.mean(self.y - np.dot(self.w.T, self.X.T))
 
                 E_i = self.f(x_i, self.w, self.b) - y_i
 
-                if (y_i * E_i < -self.tol and self.alpha[i] < self.regularization) or (y_i * E_i > self.tol and self.alphas[i] > 0):
+                if (y_i * E_i < -self.tol and self.alpha[i] < self.regularization) or (y_i * E_i > self.tol and self.alpha[i] > 0):
                     j = self.get_rand_j(i, n)
 
                     x_j, y_j = self.X[j, :], self.y[j]
@@ -89,17 +84,27 @@ class SVM:
                     elif self.alpha[j] < L:
                         self.alpha[j] = L
 
-                    if self.alpha[j] - prev_alpha_j < self.tol:
+                    if abs(self.alpha[j] - prev_alpha_j) < self.tol:
                         continue
 
                     self.alpha[i] = prev_alpha_i + y_i * y_j * (prev_alpha_j - self.alpha[j])
 
+                    b_1 = self.b - E_i - y_i * (self.alpha[i] - prev_alpha_i) * self.kernel(x_i, x_i) - y_j * (self.alpha[j] - prev_alpha_j) * self.kernel(x_i, x_j)
+                    b_2 = self.b - E_j - y_i * (self.alpha[i] - prev_alpha_i) * self.kernel(x_i, x_j) - y_j * (self.alpha[j] - prev_alpha_j) * self.kernel(x_j, x_j)
+
+                    if 0 < self.alpha[i] < self.regularization:
+                        self.b = b_1
+                    elif 0 < self.alpha[j] < self.regularization:
+                        self.b = b_2
+                    else:
+                        self.b = (b_1 + b_2) / 2.0
+
                     num_changed_alphas += 1
 
-                if num_changed_alphas == 0:
-                    iteration += 1
-                else:
-                    iteration = 0
+            if num_changed_alphas == 0:
+                iteration += 1
+            else:
+                iteration = 0
 
     def predict(self, X):
         X = SVM.normalize(X)
@@ -107,7 +112,7 @@ class SVM:
 
     def f(self, X, w, b):
         pred = []
-        f_x = np.dot(w.T, X.T) + b
+        f_x = np.dot(w, X) + b
         for e in f_x:
             if e >= 0:
                 pred.append(1)

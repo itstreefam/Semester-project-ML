@@ -54,7 +54,8 @@ class SVM:
                 self.w = np.dot(self.alpha * self.y, self.X)
                 
                 E_i = self.f(x_i, self.w, self.b) - y_i
-                if ((y_i * E_i).all() < - self.tol and self.alpha[i] < self.regularization) or ((y_i * E_i).all() > self.tol and self.alpha[i] > 0):
+                res_i = y_i * E_i
+                if (res_i.any() < - self.tol and self.alpha[i] < self.regularization) or (res_i.any() > self.tol and self.alpha[i] > 0):
                     j = self.get_rand_j(i, n)
 
                     x_j, y_j = self.X[j, :], self.y[j]
@@ -109,16 +110,16 @@ class SVM:
         return self.f(X, self.w, self.b)
 
     def f(self, X, w, b):
-        pred = []
+        pred = np.array([])
         
         # X = X.reshape(len(X),1)
         f_x = np.dot(w, X.T) + b
 
         for e in f_x:
-            if e.all() >= 0:
-                pred.append(1)
+            if e.any() >= 0:
+                pred = np.append(pred, 1)
             else:
-                pred.append(-1)
+                pred = np.append(pred, -1)
         return pred
 
     def get_rand_j(self, i, n):

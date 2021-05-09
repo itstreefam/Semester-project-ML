@@ -5,6 +5,7 @@ import warnings
 import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+import numpy as np
 
 from svm import SVM
 
@@ -31,8 +32,9 @@ if __name__ == '__main__':
         svm.train(Xtrain, ytrain)
 
         test_pred = svm.predict(Xtest)
-        print(test_pred)
-        # print("Test accuracy is {}".format(accuracy_score(ytest.reshape(-1, ), test_pred)))
+        i = round(0.25 * len(test_pred))
+        test_pred = np.array(test_pred[:i])
+        print("Test accuracy is {}".format(accuracy_score(ytest.reshape(-1, ), test_pred)))
 
     except Exception as e:
         logging.error(traceback.format_exc())

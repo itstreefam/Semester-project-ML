@@ -3,9 +3,11 @@ import traceback
 import warnings
 
 import pandas as pd
+from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 import numpy as np
+np.random.seed(1234)
 
 from svm import SVM
 
@@ -28,11 +30,34 @@ if __name__ == '__main__':
         y = dataset['heart_disease'].values
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=0)
 
-        svm = SVM(max_iteration=1000, kernel_type='linear', regularization=1, learning_rate=0.0001, tol=1e-6)
+        svm = SVM(max_iteration=100, kernel_type='linear', regularization=5, learning_rate=0.01, tol=1e-5)
         svm.train(Xtrain, ytrain)
 
+        train_pred = svm.predict(Xtrain)
         test_pred = svm.predict(Xtest)
+
+        print("Train accuracy is {}".format(accuracy_score(ytrain, train_pred)))
         print("Test accuracy is {}".format(accuracy_score(ytest, test_pred)))
+
+        print('Breast Cancer Wisconsin (Diagnostic) Data Set')
+        dataset2 = pd.read_csv("data/breast_cancer_wisconsin_diagnostic_data.csv")
+        dataset2.dropna(axis="columns", how="any", inplace=True)
+
+        dataset2['diagnosis'] = dataset2['diagnosis'].replace('B', -1)
+        dataset2['diagnosis'] = dataset2['diagnosis'].replace('M', 1)
+
+        X2 = dataset2.drop(columns=['id', 'diagnosis'])
+        y2 = dataset2['diagnosis'].values
+        Xtrain2, Xtest2, ytrain2, ytest2 = train_test_split(X2, y2, test_size=0.2, random_state=0)
+
+        svm2 = SVM(max_iteration=100, kernel_type='linear', regularization=5, learning_rate=0.01, tol=1e-5)
+        svm2.train(Xtrain2, ytrain2)
+
+        train_pred2 = svm2.predict(Xtrain2)
+        test_pred2 = svm2.predict(Xtest2)
+
+        print("Train accuracy is {}".format(accuracy_score(ytrain2, train_pred2)))
+        print("Test accuracy is {}".format(accuracy_score(ytest2, test_pred2)))
 
     except Exception as e:
         logging.error(traceback.format_exc())

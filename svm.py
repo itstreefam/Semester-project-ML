@@ -2,12 +2,14 @@
 Ref: https://aihubprojects.com/svm-from-scratch-python/
      http://cs229.stanford.edu/materials/smo.pdf
      https://ai6034.mit.edu/wiki/images/SVM_and_Boosting.pdf
+     https://jonchar.net/notebooks/SVM/
 """
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random as rn
+
 from sklearn.preprocessing import StandardScaler
 
 
@@ -15,112 +17,112 @@ class SVM:
 
     def __init__(self, max_iteration=1000, kernel_type='linear', regularization=1.0, learning_rate=0.001, tol=1e-5):
         self.max_iteration = max_iteration
+        if kernel_type == 'linear':
+            self.kernel = self.kernel_linear
+        elif kernel_type == 'poly':
+            self.kernel = self.kernel_poly
+        elif kernel_type == 'rbf':
+            self.kernel = self.kernel_rbf
+        else:
+            print('Wrong kernel name')
         self.kernel_type = kernel_type
         self.regularization = regularization
         self.learning_rate = learning_rate
         self.tol = tol
 
-        self.X = None
-        self.y = None
         self.alpha = None
         self.w = None
         self.b = None
 
-    def kernel(self, x1, x2, kernel_type='linear', degree=None):
-        self.kernel_type = kernel_type
-        if self.kernel_type == 'linear':
-            return np.dot(x1, x2.T)
-        elif self.kernel_type == 'poly':
-            if degree >= 2:
-                return (np.dot(x1, x2.T) + self.b) ** degree
-        elif self.kernel_type == 'rbf':
-            pass
+    def kernel_linear(self, x1, x2):
+        return x1 @ x2.T + self.b
+
+    def kernel_poly(self, x1, x2, degree=2):
+        if degree == 1:
+            self.kernel_linear(x1, x2)
+        elif degree > 1:
+            return (x1 @ x2.T + self.b) ** degree
         else:
-            print('Wrong kernel name')
+            print('Incorrect degree')
+
+    def kernel_rbf(self, x1, x2, sigma=1):
+        if np.ndim(x1) == 1 and np.ndim(x2) == 1:
+            result = np.exp(- (np.linalg.norm(x1 - x2, 2)) ** 2 / (2 * sigma ** 2))
+        elif (np.ndim(x1) > 1 and np.ndim(x2) == 1) or (np.ndim(x1) == 1 and np.ndim(x2) > 1):
+            result = np.exp(- (np.linalg.norm(x1 - x2, 2, axis=1) ** 2) / (2 * sigma ** 2))
+        elif np.ndim(x1) > 1 and np.ndim(x2) > 1:
+            result = np.exp(-(np.linalg.norm(x1[:, np.newaxis] - x2[np.newaxis, :], 2, axis=2) ** 2) / (2 * sigma ** 2))
+        return result
 
     def train(self, X, y):
-        self.X = SVM.normalize(X)
-        self.y = y
-        n = len(self.X)
-        self.alpha = np.array([0.0] * n)
+        X = SVM.normalize(X)
+        n = len(X)
+        self.alpha = np.zeros(n)
         self.b = 0.0
         iteration = 0
-        while iteration < self.max_iteration:
-            num_changed_alphas = 0
 
-            for i in range(n):
-                x_i, y_i = self.X[i, :], self.y[i]
+        while True:
+            iteration += 1
+            prev_alpha = np.copy(self.alpha)
 
-                self.w = np.dot(self.alpha * self.y, self.X)
-                
+            for j in range(0, n):
+                # get random i is not equal to j
+                i = self.get_rand_j(j, n - 1)
+
+                x_i, y_i = X[i, :], y[i]
+                x_j, y_j = X[j, :], y[j]
+
+                eta = self.kernel(x_i, x_i) + self.kernel(x_j, x_j) - 2 * self.kernel(x_i, x_j)
+                if eta == 0:
+                    continue
+
+                prev_alpha_j, prev_alpha_i = self.alpha[j], self.alpha[i]
+
+                if y_i != y_j:
+                    (L, H) = max(0, prev_alpha_j - prev_alpha_i), min(self.regularization, self.regularization + prev_alpha_j - prev_alpha_i)
+                else:
+                    (L, H) = max(0, prev_alpha_i + prev_alpha_j - self.regularization), min(self.regularization, prev_alpha_i + prev_alpha_j)
+                if L == H:
+                    continue
+
+                self.w = (self.alpha * y) @ X
+                self.b = np.mean(y - self.w @ X.T)
+
                 E_i = self.f(x_i, self.w, self.b) - y_i
-                res_i = y_i * E_i
-                if (res_i.any() < - self.tol and self.alpha[i] < self.regularization) or (res_i.any() > self.tol and self.alpha[i] > 0):
-                    j = self.get_rand_j(i, n)
+                E_j = self.f(x_j, self.w, self.b) - y_j
 
-                    x_j, y_j = self.X[j, :], self.y[j]
-                    E_j = self.f(x_j, self.w, self.b) - y_j
+                # set new alpha values
+                self.alpha[j] = prev_alpha_j + float(y_j * (E_i - E_j)) / eta
+                if self.alpha[j] > H:
+                    self.alpha[j] = H
+                elif self.alpha[j] < L:
+                    self.alpha[j] = L
 
-                    prev_alpha_i, prev_alpha_j = self.alpha[i], self.alpha[j]
+                self.alpha[i] = prev_alpha_i + y_i * y_j * (prev_alpha_j - self.alpha[j])
 
-                    if y_i != y_j:
-                        L, H = max(0, prev_alpha_j - prev_alpha_i), min(self.regularization, self.regularization + prev_alpha_j - prev_alpha_i)
-                    else:
-                        L, H = max(0, prev_alpha_i + prev_alpha_j - self.regularization), min(self.regularization, prev_alpha_i + prev_alpha_j)
+            diff = np.linalg.norm(self.alpha - prev_alpha)
+            if diff < self.tol:
+                break
 
-                    if L == H:
-                        continue
+            if iteration >= self.max_iteration:
+                print("Max iterations reached")
+                return
 
-                    eta = 2 * self.kernel(x_i, x_j) - self.kernel_type(x_i, x_i) - self.kernel_type(x_j, x_j)
-
-                    if eta >= 0:
-                        continue
-
-                    self.alpha[j] = prev_alpha_j + float(y_j * (E_i - E_j)) / eta
-
-                    if self.alpha[j] > H:
-                        self.alpha[j] = H
-                    elif self.alpha[j] < L:
-                        self.alpha[j] = L
-
-                    if abs(self.alpha[j] - prev_alpha_j) < self.tol:
-                        continue
-
-                    self.alpha[i] = prev_alpha_i + y_i * y_j * (prev_alpha_j - self.alpha[j])
-
-                    b_1 = self.b - E_i - y_i * (self.alpha[i] - prev_alpha_i) * self.kernel(x_i, x_i) - y_j * (self.alpha[j] - prev_alpha_j) * self.kernel(x_i, x_j)
-                    b_2 = self.b - E_j - y_i * (self.alpha[i] - prev_alpha_i) * self.kernel(x_i, x_j) - y_j * (self.alpha[j] - prev_alpha_j) * self.kernel(x_j, x_j)
-
-                    if 0 < self.alpha[i] < self.regularization:
-                        self.b = b_1
-                    elif 0 < self.alpha[j] < self.regularization:
-                        self.b = b_2
-                    else:
-                        self.b = (b_1 + b_2) / 2.0
-
-                    num_changed_alphas += 1
-
-            if num_changed_alphas == 0:
-                iteration += 1
-            else:
-                iteration = 0
+        self.b = np.mean(y - self.w @ X.T)
+        if self.kernel_type == 'linear':
+            self.w = self.kernel_linear(self.alpha * y, X.T)
+        elif self.kernel_type == 'poly':
+            self.w = self.kernel_poly(self.alpha * y, X.T, degree=2)
+        elif self.kernel_type == 'rbf':
+            self.w = self.kernel_rbf(self.alpha * y, X.T, sigma=1)
 
     def predict(self, X):
         X = SVM.normalize(X)
         return self.f(X, self.w, self.b)
 
     def f(self, X, w, b):
-        pred = np.array([])
-        
-        # X = X.reshape(len(X),1)
-        f_x = np.dot(w, X.T) + b
-
-        for e in f_x:
-            if e.any() >= 0:
-                pred = np.append(pred, 1)
-            else:
-                pred = np.append(pred, -1)
-        return pred
+        f_x = w @ X.T + b
+        return np.sign(f_x)
 
     def get_rand_j(self, i, n):
         j = 0

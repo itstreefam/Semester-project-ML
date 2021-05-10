@@ -21,20 +21,18 @@ if __name__ == '__main__':
         dataset = pd.read_csv("data/heart.dat", sep=' ', names=columns)
         dataset.dropna(axis="columns", how="any", inplace=True)
 
-        dataset['heart_disease'] = dataset['heart_disease'].replace(1, 0)
+        dataset['heart_disease'] = dataset['heart_disease'].replace(1, -1)
         dataset['heart_disease'] = dataset['heart_disease'].replace(2, 1)
 
         X = dataset.drop(columns=['heart_disease'])
-        y = dataset['heart_disease'].values.reshape(X.shape[0], 1)
+        y = dataset['heart_disease'].values
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=0)
 
-        svm = SVM(max_iteration=100, kernel_type='linear', regularization=1.0, learning_rate=0.001, tol=1e-5)
+        svm = SVM(max_iteration=1000, kernel_type='linear', regularization=1, learning_rate=0.0001, tol=1e-6)
         svm.train(Xtrain, ytrain)
 
         test_pred = svm.predict(Xtest)
-        i = round(0.25 * len(test_pred))
-        test_pred = np.array(test_pred[:i])
-        print("Test accuracy is {}".format(accuracy_score(ytest.reshape(-1, ), test_pred)))
+        print("Test accuracy is {}".format(accuracy_score(ytest, test_pred)))
 
     except Exception as e:
         logging.error(traceback.format_exc())

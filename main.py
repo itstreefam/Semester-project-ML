@@ -1,4 +1,5 @@
 import logging
+import time
 import traceback
 import warnings
 import time
@@ -7,7 +8,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 import numpy as np
-from sklearn import svm as svm_lib
+from sklearn.svm import SVC
 np.random.seed(1234)
 
 from svm import SVM
@@ -32,6 +33,7 @@ if __name__ == '__main__':
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=0)
 
         svm = SVM(max_iteration=100, kernel_type='linear', regularization=10, learning_rate=0.01, tol=1e-5)
+
         start = time.time()
         svm.train(Xtrain, ytrain)
         end = time.time()
@@ -39,13 +41,21 @@ if __name__ == '__main__':
         train_pred = svm.predict(Xtrain)
         test_pred = svm.predict(Xtest)
 
+        # uncomment this when you want to load a model's configuration
+        # svm = SVM.load('model1_heart.pickle')
+        # train_pred = svm.predict(Xtrain)
+        # test_pred = svm.predict(Xtest)
+
         svm.info()
         print("Train time is {}".format(end - start))
         print("Train accuracy is {}".format(accuracy_score(ytrain, train_pred)))
         print("Test accuracy is {}".format(accuracy_score(ytest, test_pred)))
 
+        # uncomment this when you want to save a model's configuration
+        svm.save('model1_heart')
+
         # Sklearn library implementation
-        clf = svm_lib.SVC(decision_function_shape = 'ovo')
+        clf = SVC(kernel='linear', C=10)
         start = time.time()
         clf.fit(Xtrain, ytrain)
         end = time.time()
@@ -55,6 +65,7 @@ if __name__ == '__main__':
         print("Train accuracy from sklearn is {}".format(accuracy_score(ytrain, train_lib_pred)))
         print("Test accuracy from sklearn is {}".format(accuracy_score(ytest, test_lib_pred)))
 
+        print('\n')
         print('Breast Cancer Wisconsin (Diagnostic) Data Set')
         dataset2 = pd.read_csv("data/breast_cancer_wisconsin_diagnostic_data.csv")
         dataset2.dropna(axis="columns", how="any", inplace=True)
@@ -70,16 +81,25 @@ if __name__ == '__main__':
         start = time.time()
         svm2.train(Xtrain2, ytrain2)
         end = time.time()
+        
         train_pred2 = svm2.predict(Xtrain2)
         test_pred2 = svm2.predict(Xtest2)
+
+        # uncomment this when you want to load a model's configuration
+        # svm = SVM.load('model1_heart.pickle')
+        # train_pred = svm.predict(Xtrain)
+        # test_pred = svm.predict(Xtest)
 
         svm2.info()
         print("Train time is {}".format(end - start))
         print("Train accuracy is {}".format(accuracy_score(ytrain2, train_pred2)))
         print("Test accuracy is {}".format(accuracy_score(ytest2, test_pred2)))
 
+        # uncomment this when you want to save a model's configuration
+        svm.save('model2_breast')
+
         # Sklearn library implementation
-        clf2 = svm_lib.SVC(decision_function_shape = 'ovo')
+        clf2 = SVC(kernel='linear', C=5)
         start = time.time()
         clf2.fit(Xtrain2, ytrain2)
         end = time.time()

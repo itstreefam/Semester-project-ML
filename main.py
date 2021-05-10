@@ -1,4 +1,5 @@
 import logging
+import time
 import traceback
 import warnings
 
@@ -7,6 +8,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 import numpy as np
+from sklearn.svm import SVC
 np.random.seed(1234)
 
 from svm import SVM
@@ -31,7 +33,10 @@ if __name__ == '__main__':
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=0)
 
         svm = SVM(max_iteration=100, kernel_type='linear', regularization=10, learning_rate=0.01, tol=1e-5)
+
+        start = time.time()
         svm.train(Xtrain, ytrain)
+        end = time.time()
 
         train_pred = svm.predict(Xtrain)
         test_pred = svm.predict(Xtest)
@@ -42,17 +47,21 @@ if __name__ == '__main__':
         # test_pred = svm.predict(Xtest)
 
         svm.info()
+        print("Train time is {}".format(end - start))
         print("Train accuracy is {}".format(accuracy_score(ytrain, train_pred)))
         print("Test accuracy is {}".format(accuracy_score(ytest, test_pred)))
 
         # uncomment this when you want to save a model's configuration
         svm.save('model1_heart')
 
-        from sklearn.svm import SVC
-        model = SVC(kernel='linear', C=10)
-        model.fit(Xtrain, ytrain)
-        y_train_pred = model.predict(Xtrain)
-        y_pred = model.predict(Xtest)
+        # Sklearn library implementation
+        clf = SVC(kernel='linear', C=10)
+        start = time.time()
+        clf.fit(Xtrain, ytrain)
+        end = time.time()
+        y_train_pred = clf.predict(Xtrain)
+        y_pred = clf.predict(Xtest)
+        print("Train time from sklearn is {}".format(end - start))
         print("Train accuracy with sklearn's svm is {}".format(accuracy_score(ytrain, y_train_pred)))
         print("Test accuracy with sklearn's svm is {}".format(accuracy_score(ytest, y_pred)))
 
@@ -69,7 +78,10 @@ if __name__ == '__main__':
         Xtrain2, Xtest2, ytrain2, ytest2 = train_test_split(X2, y2, test_size=0.2, random_state=0)
 
         svm2 = SVM(max_iteration=100, kernel_type='linear', regularization=5, learning_rate=0.001, tol=1e-4)
+
+        start = time.time()
         svm2.train(Xtrain2, ytrain2)
+        end = time.time()
 
         train_pred2 = svm2.predict(Xtrain2)
         test_pred2 = svm2.predict(Xtest2)
@@ -80,20 +92,23 @@ if __name__ == '__main__':
         # test_pred = svm.predict(Xtest)
 
         svm2.info()
+        print("Train time is {}".format(end - start))
         print("Train accuracy is {}".format(accuracy_score(ytrain2, train_pred2)))
         print("Test accuracy is {}".format(accuracy_score(ytest2, test_pred2)))
 
         # uncomment this when you want to save a model's configuration
         svm.save('model2_breast')
 
-        from sklearn.svm import SVC
-
-        model2 = SVC(kernel='linear', C=5)
-        model2.fit(Xtrain2, ytrain2)
-        y_train_pred_2 = model2.predict(Xtrain2)
-        y_pred_2 = model2.predict(Xtest2)
-        print("Train accuracy with sklearn's svm is {}".format(accuracy_score(ytrain2, y_train_pred_2)))
-        print("Test accuracy with sklearn's svm is {}".format(accuracy_score(ytest2, y_pred_2)))
+        # Sklearn library implementation
+        clf2 = SVC(kernel='linear', C=5)
+        start = time.time()
+        clf2.fit(Xtrain2, ytrain2)
+        end = time.time()
+        y_train_pred2 = clf2.predict(Xtrain2)
+        y_pred2 = clf2.predict(Xtest2)
+        print("Train time from sklearn is {}".format(end - start))
+        print("Train accuracy with sklearn's svm is {}".format(accuracy_score(ytrain2, y_train_pred2)))
+        print("Test accuracy with sklearn's svm is {}".format(accuracy_score(ytest2, y_pred2)))
 
     except Exception as e:
         logging.error(traceback.format_exc())

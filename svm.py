@@ -139,6 +139,7 @@ class SVM:
         print("Learning rate:", self.learning_rate)
         print("Margin of tolerance :", self.tol)
         print("kernel_type:", self.kernel_type)
+        print("############ ------------ ################")
 
     def save(self, file):
         with open('./saved_models/' + file + '.pickle', 'wb') as f:

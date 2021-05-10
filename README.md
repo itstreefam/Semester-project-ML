@@ -22,7 +22,7 @@ Run the program in terminal in the appropriate directory using `py main.py`.
 ## Results And Going Forward:
 
 ### Linear kernel
-![compared_results](imgs/compared_results.PNG)
+![compared_results](imgs/compared_results_timed.PNG)
 
 ## References:
 

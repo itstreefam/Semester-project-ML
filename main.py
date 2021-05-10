@@ -1,12 +1,13 @@
 import logging
 import traceback
 import warnings
-
+import time
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 import numpy as np
+from sklearn import svm as svm_lib
 np.random.seed(1234)
 
 from svm import SVM
@@ -31,14 +32,28 @@ if __name__ == '__main__':
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=0)
 
         svm = SVM(max_iteration=100, kernel_type='linear', regularization=10, learning_rate=0.01, tol=1e-5)
+        start = time.time()
         svm.train(Xtrain, ytrain)
+        end = time.time()
 
         train_pred = svm.predict(Xtrain)
         test_pred = svm.predict(Xtest)
 
         svm.info()
+        print("Train time is {}".format(end - start))
         print("Train accuracy is {}".format(accuracy_score(ytrain, train_pred)))
         print("Test accuracy is {}".format(accuracy_score(ytest, test_pred)))
+
+        # Sklearn library implementation
+        clf = svm_lib.SVC(decision_function_shape = 'ovo')
+        start = time.time()
+        clf.fit(Xtrain, ytrain)
+        end = time.time()
+        train_lib_pred = clf.predict(Xtrain)
+        test_lib_pred = clf.predict(Xtest)
+        print("Train time from sklearn is {}".format(end - start))
+        print("Train accuracy from sklearn is {}".format(accuracy_score(ytrain, train_lib_pred)))
+        print("Test accuracy from sklearn is {}".format(accuracy_score(ytest, test_lib_pred)))
 
         print('Breast Cancer Wisconsin (Diagnostic) Data Set')
         dataset2 = pd.read_csv("data/breast_cancer_wisconsin_diagnostic_data.csv")
@@ -52,14 +67,28 @@ if __name__ == '__main__':
         Xtrain2, Xtest2, ytrain2, ytest2 = train_test_split(X2, y2, test_size=0.2, random_state=0)
 
         svm2 = SVM(max_iteration=100, kernel_type='linear', regularization=5, learning_rate=0.01, tol=1e-5)
+        start = time.time()
         svm2.train(Xtrain2, ytrain2)
-
+        end = time.time()
         train_pred2 = svm2.predict(Xtrain2)
         test_pred2 = svm2.predict(Xtest2)
 
         svm2.info()
+        print("Train time is {}".format(end - start))
         print("Train accuracy is {}".format(accuracy_score(ytrain2, train_pred2)))
         print("Test accuracy is {}".format(accuracy_score(ytest2, test_pred2)))
 
+        # Sklearn library implementation
+        clf2 = svm_lib.SVC(decision_function_shape = 'ovo')
+        start = time.time()
+        clf2.fit(Xtrain2, ytrain2)
+        end = time.time()
+        train_lib_pred2 = clf2.predict(Xtrain2)
+        test_lib_pred2 = clf2.predict(Xtest2)
+        print("Train time from sklearn is {}".format(end - start))
+        print("Train accuracy from sklearn is {}".format(accuracy_score(ytrain2, train_lib_pred2)))
+        print("Test accuracy from sklearn is {}".format(accuracy_score(ytest2, test_lib_pred2)))
+
     except Exception as e:
         logging.error(traceback.format_exc())
+

@@ -30,12 +30,13 @@ if __name__ == '__main__':
         y = dataset['heart_disease'].values
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=0)
 
-        svm = SVM(max_iteration=100, kernel_type='linear', regularization=5, learning_rate=0.01, tol=1e-5)
+        svm = SVM(max_iteration=100, kernel_type='linear', regularization=10, learning_rate=0.01, tol=1e-5)
         svm.train(Xtrain, ytrain)
 
         train_pred = svm.predict(Xtrain)
         test_pred = svm.predict(Xtest)
 
+        svm.info()
         print("Train accuracy is {}".format(accuracy_score(ytrain, train_pred)))
         print("Test accuracy is {}".format(accuracy_score(ytest, test_pred)))
 
@@ -56,6 +57,7 @@ if __name__ == '__main__':
         train_pred2 = svm2.predict(Xtrain2)
         test_pred2 = svm2.predict(Xtest2)
 
+        svm2.info()
         print("Train accuracy is {}".format(accuracy_score(ytrain2, train_pred2)))
         print("Test accuracy is {}".format(accuracy_score(ytest2, test_pred2)))
 

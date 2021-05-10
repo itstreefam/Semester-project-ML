@@ -132,6 +132,14 @@ class SVM:
             count += 1
         return j
 
+    def info(self):
+        print("############ SVM's params ################")
+        print("Regularization:", self.regularization)
+        print("Max iterations:", self.max_iteration)
+        print("Learning rate:", self.learning_rate)
+        print("Margin of tolerance :", self.tol)
+        print("kernel_type:", self.kernel_type)
+
     @staticmethod
     def normalize(X):
         if isinstance(X, pd.DataFrame):

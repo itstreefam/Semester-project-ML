@@ -21,7 +21,8 @@ Run the program in terminal in the appropriate directory using `py main.py`.
 
 ## Results And Going Forward:
 
-![acc_results](imgs/acc_results.PNG)
+### Linear kernel
+![compared_results](imgs/compared_results.PNG)
 
 ## References:
 

@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random as rn
-
 from sklearn.preprocessing import StandardScaler
 
 
@@ -33,6 +32,7 @@ class SVM:
         self.alpha = None
         self.w = None
         self.b = None
+        np.random.seed(1234)
 
     def kernel_linear(self, x1, x2):
         return x1 @ x2.T + self.b
@@ -139,6 +139,15 @@ class SVM:
         print("Learning rate:", self.learning_rate)
         print("Margin of tolerance :", self.tol)
         print("kernel_type:", self.kernel_type)
+
+    def save(self, file):
+        with open('./saved_models/' + file + '.pickle', 'wb') as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(filename):
+        with open('./saved_models/' + filename, 'rb') as f:
+            return pickle.load(f)
 
     @staticmethod
     def normalize(X):

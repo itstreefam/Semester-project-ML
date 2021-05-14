@@ -1,9 +1,11 @@
+import copy
 import pickle
+import time
 import matplotlib.pyplot as plt
 import numba
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 
 class SVM:
@@ -11,11 +13,11 @@ class SVM:
     def __init__(self, max_iteration=1000, kernel_type='linear', regularization=1.0, learning_rate=0.001, tol=1e-5):
         self.max_iteration = max_iteration
         if kernel_type == 'linear':
-            self.kernel = self.kernel_linear
+            self.kernel = SVM.kernel_linear
         elif kernel_type == 'poly':
-            self.kernel = self.kernel_poly
+            self.kernel = SVM.kernel_poly
         elif kernel_type == 'rbf':
-            self.kernel = self.kernel_rbf
+            self.kernel = SVM.kernel_rbf
         else:
             print('Wrong kernel name')
 
@@ -30,12 +32,14 @@ class SVM:
         self.y = None
         np.random.seed(1234)
 
-    def kernel_linear(self, x1, x2):
+    @staticmethod
+    def kernel_linear(x1, x2):
         return x1 @ x2.T
 
-    def kernel_poly(self, x1, x2, degree=2):
+    @staticmethod
+    def kernel_poly(x1, x2, degree=2):
         if degree == 1:
-            self.kernel_linear(x1, x2)
+            SVM.kernel_linear(x1, x2)
         elif degree > 1:
             res = x1 @ x2.T
             bias = 1
@@ -46,7 +50,8 @@ class SVM:
         else:
             print('Incorrect degree')
 
-    def kernel_rbf(self, x1, x2, sigma=1):
+    @staticmethod
+    def kernel_rbf(x1, x2, sigma=1):
         return np.exp(- (np.linalg.norm(x1 - x2, 2, axis=-1) ** 2) / (2 * sigma ** 2)).reshape(-1, 1)
 
     def train(self, X, y):
@@ -145,3 +150,67 @@ class SVM:
         if isinstance(X, pd.DataFrame):
             X = X.values
         return StandardScaler().fit_transform(X)
+
+
+class MultiSVM:
+
+    def __init__(self, max_iteration=1000, kernel_type='linear', regularization=1.0, learning_rate=0.001, tol=1e-5):
+        self.max_iteration = max_iteration
+        if kernel_type == 'linear':
+            self.kernel = SVM.kernel_linear
+        elif kernel_type == 'poly':
+            self.kernel = SVM.kernel_poly
+        elif kernel_type == 'rbf':
+            self.kernel = SVM.kernel_rbf
+        else:
+            print('Wrong kernel name')
+
+        self.kernel_type = kernel_type
+        self.regularization = regularization
+        self.learning_rate = learning_rate
+        self.tol = tol
+        self.alphas = None
+        self.w = None
+        self.b = None
+        self.X = None
+        self.y = None
+        self.label_encoder = None
+        self.num_class = 0
+        self.classifiers = []
+        np.random.seed(1234)
+
+    def train(self, X, y):
+        self.label_encoder = LabelEncoder()
+        y = self.label_encoder.fit_transform(y)
+        self.X = X
+        self.y = y
+        labels = np.unique(y)
+        self.num_class = len(labels)
+        for label in labels:
+            y_label = np.array(y)
+            y_label[y_label != label] = -1.0
+            y_label[y_label == label] = 1.0
+            print('Begin training for label', label)
+            start = time.time()
+            clf = SVM(max_iteration=self.max_iteration, kernel_type=self.kernel_type, regularization=self.regularization, learning_rate=self.learning_rate, tol=self.tol)
+            clf.train(X, y_label)
+            end = time.time()
+            print('Train time for ' + str(label) + '-vs-rest:', end - start)
+            self.classifiers.append(copy.deepcopy(clf))
+
+    def predict(self, X):
+        num_samples = len(X)
+        score = np.zeros((num_samples, self.num_class))
+        for i in range(self.num_class):
+            clf = self.classifiers[i]
+            score[:, i] = clf.predict(X).reshape(-1, )
+        return self.label_encoder.inverse_transform(np.argmax(score, axis=1))
+
+    def info(self):
+        print("############ SVM's params ################")
+        print("Regularization:", self.regularization)
+        print("Max iterations:", self.max_iteration)
+        print("Learning rate:", self.learning_rate)
+        print("Margin of tolerance :", self.tol)
+        print("kernel_type:", self.kernel_type)
+        print("############ ------------ ################")

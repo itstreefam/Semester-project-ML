@@ -1,5 +1,5 @@
 # Semester Project: Support Vector Machine
-We implemented an optimized version of the Support Vector Machine that was developed by John Platt, the former Managing Director of Microsoft Research, in his research paper Fast Training of Support Vector Machine through Sequential Minimal Optimization (SMO). We then used the speed optimized SVM to model the prediction process programmatically using classification models. In order to test the improved speed and accuracy of our optimized algorithm. We also measured the speed and accuracy of a standard SVM imported through the scikit-learn library and compared them side by side.
+We implemented an optimized version of the Support Vector Machine that was developed by John Platt, the former Managing Director of Microsoft Research, in his research paper Fast Training of Support Vector Machine through Sequential Minimal Optimization (SMO). We then used the optimized SVM to model the prediction process programmatically using classification models. In order to test the improved speed of our optimized algorithm. We also measured the speed and accuracy of a standard SVM imported through the scikit-learn library and compared them side by side.
 
 
 ## Datasets Used:

@@ -1,15 +1,17 @@
 import logging
+import time
 import traceback
 import warnings
-import time
+
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-import numpy as np
 from sklearn.svm import SVC
+
 np.random.seed(1234)
 
-from svm2 import SVM, MultiSVM
+from svm import SVM
 
 warnings.filterwarnings("ignore")
 
@@ -129,4 +131,3 @@ if __name__ == '__main__':
 
     except Exception as e:
         logging.error(traceback.format_exc())
-

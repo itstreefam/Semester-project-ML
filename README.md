@@ -9,7 +9,7 @@ This is a heart disease database including 13 different features (age, sex, ches
 ### 2. Breast Cancer Wisconsin (Diagnostic)
 This is the Diagnostic Wisconsin Breast Cancer Database with 30 different features computed for each cell nucleus. They include attribute information about radius (mean of distances from center to points on the perimeter), texture (standard deviation of gray-scale values), perimeter, area, smoothness (local variation in radius lengths), etc. Similar to train test split (80/20) in Statlog (Heart), there are 569 samples in total, in which the training set contains 455 samples while the test set contains the remaining 114. The goal is to predict if a patient has breast cancer or not.
 
-### 3. Red Wine Quality Data Set
+### 3. Red Wine Quality
 This is the red wine quality database with 11 different features. They include information such as acidity, density, pH, etc. based on physicochemical tests. There are 1599 instances in total, and we split them into 1279 instances for our train set and the remaining 320 instances for our test set. The goal is to predict if a test sample is of excellent or poor wine quality.
 
 ## Support Vector Machine Classification:

@@ -1,8 +1,6 @@
 import copy
 import pickle
 import time
-import matplotlib.pyplot as plt
-import numba
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -190,6 +188,7 @@ class MultiSVM:
             y_label = np.array(y)
             y_label[y_label != label] = -1.0
             y_label[y_label == label] = 1.0
+
             print('Begin training for label', label)
             start = time.time()
             clf = SVM(max_iteration=self.max_iteration, kernel_type=self.kernel_type, regularization=self.regularization, learning_rate=self.learning_rate, tol=self.tol)
@@ -201,9 +200,11 @@ class MultiSVM:
     def predict(self, X):
         num_samples = len(X)
         score = np.zeros((num_samples, self.num_class))
+
         for i in range(self.num_class):
             clf = self.classifiers[i]
             score[:, i] = clf.predict(X).reshape(-1, )
+
         return self.label_encoder.inverse_transform(np.argmax(score, axis=1))
 
     def info(self):
@@ -214,3 +215,13 @@ class MultiSVM:
         print("Margin of tolerance :", self.tol)
         print("kernel_type:", self.kernel_type)
         print("############ ------------ ################")
+
+
+def save(model, file):
+    with open('./saved_models/' + file + '.pickle', 'wb') as f:
+        pickle.dump(model, f)
+
+
+def load(filename):
+    with open('./saved_models/' + filename, 'rb') as f:
+        return pickle.load(f)
